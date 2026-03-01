@@ -16,7 +16,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 1. Basic - simple default QR
     println!("Generating basic sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .build()?;
     qr.save(&format!("{}/basic.png", assets), OutputFormat::Png)?;
@@ -24,7 +24,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 2. Rounded dots
     println!("Generating rounded dots sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .dots_options(
             DotsOptions::new(DotType::Rounded).with_color(Color::from_hex("#4A90D9").unwrap()),
@@ -46,7 +46,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 3. Dots style
     println!("Generating dots style sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .dots_options(
             DotsOptions::new(DotType::Dots).with_color(Color::from_hex("#E74C3C").unwrap()),
@@ -68,7 +68,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 4. Classy rounded
     println!("Generating classy rounded sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .dots_options(
             DotsOptions::new(DotType::ClassyRounded)
@@ -91,7 +91,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 5. With gradient
     println!("Generating gradient sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .dots_options(
             DotsOptions::new(DotType::Rounded).with_gradient(Gradient::simple_linear(
@@ -120,7 +120,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     let logo_bytes = std::fs::read(&logo_path)?;
 
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .image(logo_bytes.clone())
         .image_options(
@@ -149,7 +149,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 7. Circle shape
     println!("Generating circle shape sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .shape(ShapeType::Circle)
         .dots_options(
@@ -172,7 +172,7 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 8. With border
     println!("Generating border sample...");
     let qr = QRCodeStyling::builder()
-        .data("https://github.com/nazrdogan/qr-code-styling-rs")
+        .data(SAMPLE_DATA)
         .size(300)
         .margin(50)
         .shape(ShapeType::Circle)
@@ -211,8 +211,6 @@ fn main() -> qr_code_styling::error::Result<()> {
     // Convert bordered SVG to PNG via saving as SVG then rendering
     std::fs::write(&format!("{}/with_border.svg", assets), &bordered_svg)?;
 
-    println!("\nAll samples generated in assets/!");
-
     // scaffold a set of samples based on different categories.
     const QR_SIZE: u32 = 300;
 
@@ -222,12 +220,28 @@ fn main() -> qr_code_styling::error::Result<()> {
     let root: &Path = assets.as_ref();
 
     // 9. Gradient Samples
-    let gradient_samples = samples_background_gradients(base_builder, base_background)?;
+    let gradient_samples =
+        samples_background_gradients(base_builder.clone(), base_background.clone())?;
     let gradients_path = root.join("background_gradients");
     save(gradient_samples, &gradients_path)?;
 
     // 10. Dot Samples
+    let dot_samples = samples_dots(base_builder.clone(), base_background.clone())?;
+    let dots_path = root.join("dots");
+    save(dot_samples, &dots_path)?;
 
+    // 11. Corner Dots Samples
+    let corners_dots_samples = samples_corners_dots(base_builder.clone(), base_background.clone())?;
+    let corners_dots_path = root.join("corners_dots");
+    save(corners_dots_samples, &corners_dots_path)?;
+
+    // 12. Corner Squares Samples
+    let corners_squares_samples =
+        samples_corners_squares(base_builder.clone(), base_background.clone())?;
+    let corners_squares_path = root.join("corners_squares");
+    save(corners_squares_samples, &corners_squares_path)?;
+
+    println!("\nAll samples generated in assets/!");
     Ok(())
 }
 
@@ -243,6 +257,11 @@ struct Sample {
 /// Each sample's name is used to generate the filename (e.g., "{root_path}/linear_gradient.png").
 fn save(samples: Vec<Sample>, root_path: &Path) -> qr_code_styling::error::Result<()> {
     std::fs::create_dir_all(root_path)?;
+    println!(
+        "Saving ({}) samples to {}...",
+        samples.len(),
+        root_path.display()
+    );
     for sample in samples {
         let file_path = root_path.join(format!("{}.png", sample.name));
         sample.style.save(&file_path, OutputFormat::Png)?;
@@ -252,21 +271,6 @@ fn save(samples: Vec<Sample>, root_path: &Path) -> qr_code_styling::error::Resul
 
 /// Use the Repository's URL as the QR's data.
 const SAMPLE_DATA: &str = "https://github.com/nazrdogan/qr-code-styling-rs";
-
-/// helper macro to return stringification of a variable along with its value
-/// # Example:
-///
-/// ```
-/// let my_var = 42;
-/// let (name, value) = into_tuple!(my_var);
-/// assert_eq!(name, "my_var");
-/// assert_eq!(value, 42);
-/// ```
-macro_rules! into_tuple {
-    ($var:ident) => {
-        (stringify!($var), $var)
-    };
-}
 
 /// Returns a list of sample QR code configurations with different background [gradients types]().
 ///
@@ -281,8 +285,16 @@ fn samples_background_gradients(
     let stop_2 = ColorStop::new(1.0, Color::from_hex("#00CC99").unwrap());
 
     let linear_gradient = Gradient::linear(vec![stop_0.clone(), stop_1.clone(), stop_2.clone()]);
+    let linear_gradient_rotated = Gradient::linear_rotated(
+        std::f64::consts::PI / 4.0,
+        vec![stop_0.clone(), stop_1.clone(), stop_2.clone()],
+    );
     let radial_gradient = Gradient::radial(vec![stop_0.clone(), stop_1.clone(), stop_2.clone()]);
-    let gradient_options = vec![into_tuple!(linear_gradient), into_tuple!(radial_gradient)];
+    let gradient_options = vec![
+        ("linear_gradient", linear_gradient),
+        ("linear_gradient_rotated", linear_gradient_rotated),
+        ("radial_gradient", radial_gradient),
+    ];
 
     let mut styles = vec![];
     for (name, gradient) in gradient_options {
@@ -297,10 +309,121 @@ fn samples_background_gradients(
     Ok(styles)
 }
 
-#[test]
-fn test_into_tuple() {
-    let my_var = 42;
-    let (name, value): (&str, i8) = into_tuple!(my_var);
-    assert_eq!(name, "my_var");
-    assert_eq!(value, 42);
+/// Returns a list of sample QR code configurations with different dot types.
+///
+/// Receives a basic configuration to act as the base styling for generated samples.
+fn samples_dots(
+    base_styling: QRCodeStylingBuilder,
+    base_background: BackgroundOptions,
+) -> qr_code_styling::error::Result<Vec<Sample>> {
+    let dot_types = DotType::all();
+    let mut styles = vec![];
+
+    for dot_type in dot_types {
+        let name = match dot_type {
+            DotType::Square => "square",
+            DotType::Dots => "dots",
+            DotType::Rounded => "rounded",
+            DotType::Classy => "classy",
+            DotType::ClassyRounded => "classy_rounded",
+            DotType::ExtraRounded => "extra_rounded",
+        };
+
+        let style = base_styling
+            .clone()
+            .dots_options(
+                DotsOptions::new(*dot_type).with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_square_options(
+                CornersSquareOptions::new(CornerSquareType::ExtraRounded)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_dot_options(
+                CornersDotOptions::new(CornerDotType::Dot)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .background_options(base_background.clone())
+            .build()?;
+
+        styles.push(Sample { name, style });
+    }
+
+    Ok(styles)
+}
+
+/// Returns a list of sample QR code configurations with different corner dot types.
+///
+/// Receives a basic configuration to act as the base styling for generated samples.
+fn samples_corners_dots(
+    base_styling: QRCodeStylingBuilder,
+    base_background: BackgroundOptions,
+) -> qr_code_styling::error::Result<Vec<Sample>> {
+    let corner_dot_types = CornerDotType::all();
+    let mut styles = vec![];
+
+    for corner_dot_type in corner_dot_types {
+        let name = match corner_dot_type {
+            CornerDotType::Dot => "dot",
+            CornerDotType::Square => "square",
+        };
+
+        let style = base_styling
+            .clone()
+            .dots_options(
+                DotsOptions::new(DotType::Rounded).with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_square_options(
+                CornersSquareOptions::new(CornerSquareType::ExtraRounded)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_dot_options(
+                CornersDotOptions::new(*corner_dot_type)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .background_options(base_background.clone())
+            .build()?;
+
+        styles.push(Sample { name, style });
+    }
+
+    Ok(styles)
+}
+
+/// Returns a list of sample QR code configurations with different corner square types.
+///
+/// Receives a basic configuration to act as the base styling for generated samples.
+fn samples_corners_squares(
+    base_styling: QRCodeStylingBuilder,
+    base_background: BackgroundOptions,
+) -> qr_code_styling::error::Result<Vec<Sample>> {
+    let corner_square_types = CornerSquareType::all();
+    let mut styles = vec![];
+
+    for corner_square_type in corner_square_types {
+        let name = match corner_square_type {
+            CornerSquareType::Square => "square",
+            CornerSquareType::Dot => "dot",
+            CornerSquareType::ExtraRounded => "extra_rounded",
+        };
+
+        let style = base_styling
+            .clone()
+            .dots_options(
+                DotsOptions::new(DotType::Rounded).with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_square_options(
+                CornersSquareOptions::new(*corner_square_type)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .corners_dot_options(
+                CornersDotOptions::new(CornerDotType::Dot)
+                    .with_color(Color::from_hex("#4A90D9").unwrap()),
+            )
+            .background_options(base_background.clone())
+            .build()?;
+
+        styles.push(Sample { name, style });
+    }
+
+    Ok(styles)
 }
