@@ -212,5 +212,95 @@ fn main() -> qr_code_styling::error::Result<()> {
     std::fs::write(&format!("{}/with_border.svg", assets), &bordered_svg)?;
 
     println!("\nAll samples generated in assets/!");
+
+    // scaffold a set of samples based on different categories.
+    const QR_SIZE: u32 = 300;
+
+    let base_builder = QRCodeStyling::builder().data(SAMPLE_DATA).size(QR_SIZE);
+    let base_background =
+        BackgroundOptions::default().with_color(Color::from_hex("#333333").unwrap());
+    let root: &Path = assets.as_ref();
+
+    // 9. Gradient Samples
+    let gradient_samples = samples_background_gradients(base_builder, base_background)?;
+    let gradients_path = root.join("background_gradients");
+    save(gradient_samples, &gradients_path)?;
+
+    // 10. Dot Samples
+
     Ok(())
+}
+
+struct Sample {
+    /// Name of the sample (used for filename)
+    name: &'static str,
+    /// QR code configuration for this sample
+    style: QRCodeStyling,
+}
+
+/// Receives a list of samples and saves them to the specified root path.
+///
+/// Each sample's name is used to generate the filename (e.g., "{root_path}/linear_gradient.png").
+fn save(samples: Vec<Sample>, root_path: &Path) -> qr_code_styling::error::Result<()> {
+    std::fs::create_dir_all(root_path)?;
+    for sample in samples {
+        let file_path = root_path.join(format!("{}.png", sample.name));
+        sample.style.save(&file_path, OutputFormat::Png)?;
+    }
+    Ok(())
+}
+
+/// Use the Repository's URL as the QR's data.
+const SAMPLE_DATA: &str = "https://github.com/nazrdogan/qr-code-styling-rs";
+
+/// helper macro to return stringification of a variable along with its value
+/// # Example:
+///
+/// ```
+/// let my_var = 42;
+/// let (name, value) = into_tuple!(my_var);
+/// assert_eq!(name, "my_var");
+/// assert_eq!(value, 42);
+/// ```
+macro_rules! into_tuple {
+    ($var:ident) => {
+        (stringify!($var), $var)
+    };
+}
+
+/// Returns a list of sample QR code configurations with different background [gradients types]().
+///
+/// Receives a basic configurations to act as the base styling for generated samples.
+fn samples_background_gradients(
+    base_styling: QRCodeStylingBuilder,
+    base_background: BackgroundOptions,
+) -> qr_code_styling::error::Result<Vec<Sample>> {
+    use qr_code_styling::ColorStop;
+    let stop_0 = ColorStop::new(0.0, Color::from_hex("#FFEE88").unwrap());
+    let stop_1 = ColorStop::new(0.5, Color::from_hex("#AA1155").unwrap());
+    let stop_2 = ColorStop::new(1.0, Color::from_hex("#00CC99").unwrap());
+
+    let linear_gradient = Gradient::linear(vec![stop_0.clone(), stop_1.clone(), stop_2.clone()]);
+    let radial_gradient = Gradient::radial(vec![stop_0.clone(), stop_1.clone(), stop_2.clone()]);
+    let gradient_options = vec![into_tuple!(linear_gradient), into_tuple!(radial_gradient)];
+
+    let mut styles = vec![];
+    for (name, gradient) in gradient_options {
+        let style = base_styling
+            .clone()
+            .background_options(base_background.clone().with_gradient(gradient))
+            .build()?;
+
+        styles.push(Sample { name, style });
+    }
+
+    Ok(styles)
+}
+
+#[test]
+fn test_into_tuple() {
+    let my_var = 42;
+    let (name, value): (&str, i8) = into_tuple!(my_var);
+    assert_eq!(name, "my_var");
+    assert_eq!(value, 42);
 }
