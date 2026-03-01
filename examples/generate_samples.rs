@@ -1,15 +1,13 @@
 //! Generate sample images for README documentation.
 
 use qr_code_styling::config::{
-    BackgroundOptions, Color, CornersDotOptions, CornersSquareOptions, DotsOptions,
-    Gradient, ImageOptions,
+    BackgroundOptions, Color, CornersDotOptions, CornersSquareOptions, DotsOptions, Gradient,
+    ImageOptions,
 };
 use qr_code_styling::plugins::border::{BorderPlugin, Position, QRBorderOptions};
-use qr_code_styling::types::{
-    CornerDotType, CornerSquareType, DotType, OutputFormat, ShapeType,
-};
-use qr_code_styling::QRCodeStyling;
-use std::path::PathBuf;
+use qr_code_styling::types::{CornerDotType, CornerSquareType, DotType, OutputFormat, ShapeType};
+use qr_code_styling::{QRCodeStyling, QRCodeStylingBuilder};
+use std::path::{Path, PathBuf};
 
 fn main() -> qr_code_styling::error::Result<()> {
     let assets = "assets";
@@ -39,7 +37,9 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#4A90D9").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
     qr.save(&format!("{}/rounded.png", assets), OutputFormat::Png)?;
 
@@ -59,7 +59,9 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#C0392B").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
     qr.save(&format!("{}/dots.png", assets), OutputFormat::Png)?;
 
@@ -80,24 +82,23 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#2C3E50").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
-    qr.save(
-        &format!("{}/classy_rounded.png", assets),
-        OutputFormat::Png,
-    )?;
+    qr.save(&format!("{}/classy_rounded.png", assets), OutputFormat::Png)?;
 
     // 5. With gradient
     println!("Generating gradient sample...");
     let qr = QRCodeStyling::builder()
         .data("https://github.com/nazrdogan/qr-code-styling-rs")
         .size(300)
-        .dots_options(DotsOptions::new(DotType::Rounded).with_gradient(
-            Gradient::simple_linear(
+        .dots_options(
+            DotsOptions::new(DotType::Rounded).with_gradient(Gradient::simple_linear(
                 Color::from_hex("#8E2DE2").unwrap(),
                 Color::from_hex("#4A00E0").unwrap(),
-            ),
-        ))
+            )),
+        )
         .corners_square_options(
             CornersSquareOptions::new(CornerSquareType::ExtraRounded)
                 .with_color(Color::from_hex("#8E2DE2").unwrap()),
@@ -106,7 +107,9 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#4A00E0").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
     qr.save(&format!("{}/gradient.png", assets), OutputFormat::Png)?;
 
@@ -137,7 +140,9 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#1877F2").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
     qr.save(&format!("{}/with_logo.png", assets), OutputFormat::Png)?;
 
@@ -158,7 +163,9 @@ fn main() -> qr_code_styling::error::Result<()> {
             CornersDotOptions::new(CornerDotType::Dot)
                 .with_color(Color::from_hex("#27AE60").unwrap()),
         )
-        .background_options(BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()))
+        .background_options(
+            BackgroundOptions::default().with_color(Color::from_hex("#FFFFFF").unwrap()),
+        )
         .build()?;
     qr.save(&format!("{}/circle.png", assets), OutputFormat::Png)?;
 
