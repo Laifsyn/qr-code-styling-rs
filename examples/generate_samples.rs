@@ -212,9 +212,8 @@ fn main() -> qr_code_styling::error::Result<()> {
     // Convert bordered SVG to PNG via saving as SVG then rendering
     std::fs::write(&format!("{}/with_border.svg", assets), &bordered_svg)?;
 
-    // scaffold a set of samples based on different categories.
+    // Initialization of Style parameters.
     const QR_SIZE: u32 = 300;
-
     let base_background =
         BackgroundOptions::default().with_color(Color::from_hex("#333333").unwrap());
     let base_builder = QRCodeStyling::builder()
@@ -237,12 +236,14 @@ fn main() -> qr_code_styling::error::Result<()> {
     // 9. Gradient Samples
     let gradient_samples =
         samples_background_gradients(base_builder.clone(), base_background.clone())?;
+
     let gradients_path = root.join("background_gradients");
     save(gradient_samples, &gradients_path)?;
 
     let dots_root = root.join("dots_options");
     let base_dot_options =
         DotsOptions::default().with_color(Color::from_hex("#044389").expect("valid hex"));
+
     let color_treatments = vec![
         (
             "solid",
@@ -257,6 +258,7 @@ fn main() -> qr_code_styling::error::Result<()> {
             ]),
         ),
     ];
+
     // 10. Dot Types Samples
     let dot_samples = samples_dot_types(base_builder.clone(), base_dot_options.clone())?;
     let dots_types_path = dots_root.join("dots_types");
@@ -311,14 +313,6 @@ impl ColorTreatment {
         Self::Solid(color)
     }
 
-    /// Create a gradient treatment from two colors
-    fn gradient_two(color1: Color, color2: Color) -> Self {
-        Self::Gradient(vec![
-            ColorStop::new(0.0, color1),
-            ColorStop::new(1.0, color2),
-        ])
-    }
-
     /// Apply this color treatment to corner dot options
     fn apply_to_corners_dot(&self, options: CornersDotOptions) -> CornersDotOptions {
         match self {
@@ -340,6 +334,7 @@ impl ColorTreatment {
     }
 
     /// Apply this color treatment to dot options
+    #[expect(unused)] // The `apply_to_dots` method is currently not used in the sample generation, but left for potential future use.
     fn apply_to_dots(&self, options: DotsOptions) -> DotsOptions {
         match self {
             ColorTreatment::Solid(color) => options.with_color(*color),
@@ -426,6 +421,7 @@ fn sample_dots_colors(
         ColorStop::new(0.5, cherry),
         ColorStop::new(1.0, yellow),
     ];
+
     let gradient = Gradient::linear_rotated(PI / 6.0, color_stops.clone());
     let gradient_color = base_dot_options.clone().with_gradient(gradient.clone());
     let round_whole_pixels_on = base_dot_options.clone().with_round_size(true);
